@@ -1,37 +1,30 @@
 (ns gemini.example
   (:require [gemini.core :as gemini]))
 
-;; This example shows how to use the Gemini wrapper.
-;; Note: You need a valid Google Cloud Project ID and to be authenticated.
+;; This example shows how to use the Gemini wrapper with an API key.
 
 (defn run-example []
-  (let [project-id "your-project-id"
-        location "us-central1"
-        model-name "gemini-1.5-flash"]
+  (let [api-key "YOUR_API_KEY"] ; Replace with your actual API key
 
     (println "--- Simple Text Generation ---")
-    (with-open [client (gemini/vertex-ai project-id location)]
-      (let [model (gemini/generative-model client model-name)]
-        ;; Single prompt
-        (let [result (gemini/generate-content model "What is Clojure?")]
-          (println "Result:" (:text result)))
+    ;; Single prompt
+    (try
+      (let [result (gemini/generate-content api-key "What is Clojure?")]
+        (println "Result:" (:text result)))
+      (catch Exception e
+        (println "Error (likely invalid API key):" (.getMessage e))))
 
-        (println "\n--- Multi-modal Generation ---")
-        ;; Multi-modal prompt
-        (let [result (gemini/generate-content model ["What is in this image?"
-                                                     (gemini/file-part "image/png" "gs://generativeai-downloads/images/scones.jpg")])]
-          (println "Result:" (:text result)))
-
-        (println "\n--- Chat Session ---")
-        ;; Chat session
-        (let [chat (gemini/start-chat model)]
-          (let [resp1 (gemini/send-message chat "Hello, I am Jules.")]
-            (println "Jules:" (:text resp1)))
-          (let [resp2 (gemini/send-message chat "What was my name?")]
-            (println "AI:" (:text resp2)))
-          (println "History:" (gemini/get-history chat)))))))
+    (println "\n--- Multi-modal Generation ---")
+    ;; Multi-modal prompt with inline image (placeholder)
+    (try
+      (let [result (gemini/generate-content api-key
+                                            ["What is in this image?"
+                                             (gemini/inline-part "image/png" (byte-array [1 2 3]))])]
+        (println "Result:" (:text result)))
+      (catch Exception e
+        (println "Error:" (.getMessage e))))))
 
 (comment
-  ;; To run this, you need to set your project-id and have credentials configured.
+  ;; To run this, you need to set your api-key.
   (run-example)
   )
